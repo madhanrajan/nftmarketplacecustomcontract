@@ -3,16 +3,16 @@ import { ethers } from 'ethers'
 import { create as ipfsHttpClient } from 'ipfs-http-client'
 import { useRouter } from 'next/router'
 import Web3Modal from 'web3modal'
+import { ItemType } from '@prisma/client'
 
 const client = ipfsHttpClient('https://ipfs.infura.io:5001/api/v0')
 
-import {
-  marketplaceAddress
-} from '../config'
+import { marketplaceAddress } from '../config'
 
 import NFTMarketplace from '../artifacts/contracts/NFTMarketplace.sol/NFTMarketplace.json'
 
 export default function CreateItem() {
+
   const [fileUrl, setFileUrl] = useState(null)
   const [formInput, updateFormInput] = useState({ price: '', name: '', description: '' })
   const router = useRouter()
@@ -54,9 +54,26 @@ export default function CreateItem() {
     const connection = await web3Modal.connect()
     const provider = new ethers.providers.Web3Provider(connection)
     const signer = provider.getSigner()
+    
 
     const price = ethers.utils.parseUnits(formInput.price, 'ether')
     let contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
+    contract.on("Transfer", (from, to, value, event)=>{
+      try{
+        
+        fetch("http://localhost:3000/api/createItem", {  
+        headers: {"Content-Type": "application/json"},
+        method: "POST",
+        body: JSON.stringify({from:from, to:to, value:ethers.utils.formatEther(value), itemtype: ItemType.createItem}),
+      }).then(()=>{
+        console.log("Item created")
+      })
+      }catch (e){
+        console.log(e)
+      }
+      
+    })
+
     let listingPrice = await contract.getListingPrice()
     listingPrice = listingPrice.toString()
     let transaction = await contract.createToken(url, price, { value: listingPrice })
