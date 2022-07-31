@@ -22,7 +22,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "pages/create-nft-2.js", "pages/create-nft.js"  ],
   "exclude": [
     "node_modules"
   ]

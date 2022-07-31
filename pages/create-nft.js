@@ -58,16 +58,17 @@ export default function CreateItem() {
 
     const price = ethers.utils.parseUnits(formInput.price, 'ether')
     let contract = new ethers.Contract(marketplaceAddress, NFTMarketplace.abi, signer)
+    
     contract.on("Transfer", (from, to, value, event)=>{
       try{
         
         fetch("http://localhost:3000/api/createItem", {  
-        headers: {"Content-Type": "application/json"},
-        method: "POST",
-        body: JSON.stringify({from:from, to:to, value:ethers.utils.formatEther(value), itemtype: ItemType.createItem}),
-      }).then(()=>{
-        console.log("Item created")
-      })
+          headers: {"Content-Type": "application/json"},
+          method: "POST",
+          body: JSON.stringify({from:from, to:to, value: ethers.utils.formatEther(value), itemtype: ItemType.createItem}),
+        }).then(()=>{
+          console.log("Item created")
+        })
       }catch (e){
         console.log(e)
       }
